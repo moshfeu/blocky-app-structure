@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <title>Blockly Demo: Fixed Blockly</title>
+  <script src="blockly_compressed.js"></script>
+  <script src="blocks_compressed.js"></script>
+  <script src="en.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/canvg/1.5/canvg.min.js"></script>
+  <style>
+    body {
+      background-color: #fff;
+      font-family: sans-serif;
+    }
+    h1 {
+      font-weight: normal;
+      font-size: 140%;
+    }
+  </style>
+</head>
+
+<body>
+  <h1><a href="https://developers.google.com/blockly/">Blockly</a> &gt;
+    <a href="../index.html">Demos</a> &gt; Fixed Blockly</h1>
+
+  <p>This is a simple demo of injecting Blockly into a fixed-sized 'div' element.</p>
+
+  <p>&rarr; More info on <a href="https://developers.google.com/blockly/guides/configure-blockly/web/fixed-size">injecting
+      fixed-sized Blockly</a>&hellip;</p>
+
+  <div id="blocklyDiv" style="height: 780px; width: 600px;"></div>
+  <button onclick="save()">Save</button>
+  <canvas id="canvas" width="1000px" height="600px"></canvas>
+  <xml id="toolbox" style="display: none">
+    <!-- <block type="component"></block>
+        <block type="procedures_defnoreturn">
+          <field name="NAME">randomize</field>
+        </block>
+        <block type="logic_compare"></block>
+        <block type="controls_repeat_ext"></block>
+        <block type="math_arithmetic"></block>
+          <block type="math_number">
+            <field name="NUM">123</field>
+          </block>
+          <block type="text"></block>
+          <block type="text_print"></block>-->
+    <block type="controls_if"></block>
+    <block type="controls_ifelse"></block>
+  </xml>
+
+  <script>
+    const comps = [{
+        block: 'component',
+        name: 'Component',
+        field: 'COMP_NAME',
+        color: '#000000',
+        nextable: true,
+        prevable: true,
+      },
+      {
+        block: 'experimentsProvider',
+        name: 'Experiments Provider',
+        color: '#FF7F00',
+        prevable: true,
+      },
+      {
+        block: 'provider',
+        name: 'Provider',
+        field: 'STORE',
+        color: '#00FF00',
+        prevable: true,
+      },
+      {
+        block: 'BrowserRouter',
+        name: 'Browser Router',
+        color: '#0000FF',
+        prevable: true,
+      },
+      {
+        block: 'I18nextProvider',
+        name: 'I18nextProvider',
+        color: '#8B00FF',
+        prevable: true,
+      },
+      {
+        block: 'BLABLA',
+        name: 'blabla',
+        color: '#8B00FF',
+        output: 'Boolean',
+        field: 'blabla'
+      },
+    ];
+
+    const toolbox = document.querySelector('#toolbox');
+    // Blockly.Blocks['component'] = {
+    //   init: function () {
+    //     this.setPreviousStatement(true);
+    //     this.appendDummyInput()
+    //         .appendField('Component')
+    //         .appendField(new Blockly.FieldTextInput('name'), 'COMP_NAME')
+    //     this.appendStatementInput('Component');
+    //   }
+    // };
+    comps.forEach(comp => {
+      Blockly.Blocks[comp.block] = {
+        init: function () {
+
+          if (comp.nextable) {
+            this.setNextStatement(true);
+          }
+
+          if (comp.prevable) {
+            this.setPreviousStatement(true);
+          }
+          const dummyInput = this.appendDummyInput();
+          if (!comp.output) {
+            dummyInput.appendField(comp.name);
+          }
+
+          if (comp.field) {
+            dummyInput.appendField(new Blockly.FieldTextInput('name'), comp.field)
+          }
+          this.setColour(comp.color);
+
+          if (comp.output) {
+            this.setOutput(true, comp.output);
+            return;
+          } else {
+            this.appendStatementInput(comp.name);
+          }
+        }
+      }
+
+      toolbox.innerHTML += `<block type="${comp.block}"></block>`;
+    });
+
+    var workspace = Blockly.inject('blocklyDiv', {
+      media: '../../media/',
+      toolbox: document.getElementById('toolbox')
+    });
+
+    function save() {
+      var xml = Blockly.Xml.workspaceToDom(workspace);
+      var xml_text = Blockly.Xml.domToText(xml);
+      localStorage.setItem('blocky', xml_text);
+    }
+
+    const xmlFromLS = localStorage.getItem('blocky');
+    if (xmlFromLS) {
+      var xml = Blockly.Xml.textToDom(xmlFromLS);
+      Blockly.Xml.domToWorkspace(xml, workspace);
+    }
+
+    // function render(workspace) {
+    //     aleph = workspace.svgBlockCanvas_.cloneNode(true);
+    //     aleph.removeAttribute("width");
+    //     aleph.removeAttribute("height");
+    //     if (aleph.children[0] !== undefined) {
+    //         aleph.removeAttribute("transform");
+    //         aleph.children[0].removeAttribute("transform");
+    //         aleph.children[0].children[0].removeAttribute("transform");
+    //         var linkElm = document.createElementNS("http://www.w3.org/1999/xhtml", "style");
+    //         linkElm.textContent = Blockly.Css.CONTENT.join('') + '\n';
+    //         aleph.insertBefore(linkElm, aleph.firstChild);
+    //         const rect = aleph.querySelector('rect');
+    //         rect.parentElement.removeChild(rect);
+    //         var xml = new XMLSerializer().serializeToString(aleph);
+    //         canvg(document.getElementById('canvas'), `<svg>${xml}</svg>`);
+    //     }
+    // }
+  </script>
+</body>
+
+</html>
