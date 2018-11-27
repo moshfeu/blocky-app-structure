@@ -29,9 +29,9 @@
   <p>&rarr; More info on <a href="https://developers.google.com/blockly/guides/configure-blockly/web/fixed-size">injecting
       fixed-sized Blockly</a>&hellip;</p>
 
-  <div id="blocklyDiv" style="height: 780px; width: 600px;"></div>
+  <div id="blocklyDiv" style="height: 780px; width: 1200px;"></div>
   <button onclick="save()">Save</button>
-  <canvas id="canvas" width="1000px" height="600px"></canvas>
+  <!-- <canvas id="canvas" width="1000px" height="600px"></canvas> -->
   <xml id="toolbox" style="display: none">
     <!-- <block type="component"></block>
         <block type="procedures_defnoreturn">
@@ -45,24 +45,67 @@
           </block>
           <block type="text"></block>
           <block type="text_print"></block>-->
+    <!-- <block type="test"></block> -->
     <block type="controls_if"></block>
     <block type="controls_ifelse"></block>
   </xml>
 
   <script>
-    const comps = [{
+    const comps = [
+      {
         block: 'component',
         name: 'Component',
         field: 'COMP_NAME',
         color: '#000000',
         nextable: true,
         prevable: true,
+        dontDisplayLabel: true,
+        hasChildren: true,
       },
+      {
+        block: 'componentNoNext',
+        name: 'ComponentNoNext',
+        field: 'COMP_NAME_NO_NEXT',
+        color: '#000000',
+        prevable: true,
+        dontDisplayLabel: true,
+        hasChildren: true,
+      },
+      {
+        block: 'emptyComponent',
+        name: 'Empty Component',
+        field: 'EMPTY_COMP_NAME',
+        color: '#555555',
+        prevable: true,
+        nextable: true,
+        dontDisplayLabel: true,
+        color: '#000000'
+      },
+      {
+        block: 'emptyLastComponent',
+        name: 'Empty Last Component',
+        field: 'EMPTY_LAST_COMP_NAME',
+        color: '#555555',
+        prevable: true,
+        nextable: false,
+        dontDisplayLabel: true,
+        color: '#000000'
+      },
+      // {
+      //   block: 'emptyComponentWithNext',
+      //   name: 'Empty Component With Next',
+      //   field: 'EMPTY_COMPONENT_WITH_NEXT',
+      //   color: '#5b2300',
+      //   prevable: true,
+      //   nextable: true,
+      //   dontDisplayLabel: true,
+      // },
       {
         block: 'experimentsProvider',
         name: 'Experiments Provider',
         color: '#FF7F00',
         prevable: true,
+        hasChildren: true,
       },
       {
         block: 'provider',
@@ -70,42 +113,44 @@
         field: 'STORE',
         color: '#00FF00',
         prevable: true,
+        hasChildren: true,
       },
       {
         block: 'BrowserRouter',
         name: 'Browser Router',
         color: '#0000FF',
         prevable: true,
+        hasChildren: true,
       },
       {
         block: 'I18nextProvider',
         name: 'I18nextProvider',
         color: '#8B00FF',
         prevable: true,
+        hasChildren: true,
       },
       {
-        block: 'BLABLA',
-        name: 'blabla',
+        block: 'PARAM',
+        name: 'param',
         color: '#8B00FF',
         output: 'Boolean',
-        field: 'blabla'
+        field: 'param'
       },
     ];
 
     const toolbox = document.querySelector('#toolbox');
-    // Blockly.Blocks['component'] = {
+    // Blockly.Blocks['test'] = {
     //   init: function () {
     //     this.setPreviousStatement(true);
+    //     this.setNextStatement(true);
     //     this.appendDummyInput()
-    //         .appendField('Component')
-    //         .appendField(new Blockly.FieldTextInput('name'), 'COMP_NAME')
-    //     this.appendStatementInput('Component');
+    //         .appendField(new Blockly.FieldTextInput('name'), 'emptyComp');
+    //     this.setColour('#6a1d84');
     //   }
     // };
     comps.forEach(comp => {
       Blockly.Blocks[comp.block] = {
         init: function () {
-
           if (comp.nextable) {
             this.setNextStatement(true);
           }
@@ -114,7 +159,7 @@
             this.setPreviousStatement(true);
           }
           const dummyInput = this.appendDummyInput();
-          if (!comp.output) {
+          if (!comp.output && !comp.dontDisplayLabel) {
             dummyInput.appendField(comp.name);
           }
 
@@ -125,8 +170,7 @@
 
           if (comp.output) {
             this.setOutput(true, comp.output);
-            return;
-          } else {
+          } else if (comp.hasChildren) {
             this.appendStatementInput(comp.name);
           }
         }
@@ -136,20 +180,43 @@
     });
 
     var workspace = Blockly.inject('blocklyDiv', {
-      media: '../../media/',
+      // media: '../../media/',
       toolbox: document.getElementById('toolbox')
     });
 
     function save() {
       var xml = Blockly.Xml.workspaceToDom(workspace);
       var xml_text = Blockly.Xml.domToText(xml);
-      localStorage.setItem('blocky', xml_text);
+
+      postData('/data', {
+        data: xml_text
+      });
     }
 
-    const xmlFromLS = localStorage.getItem('blocky');
-    if (xmlFromLS) {
-      var xml = Blockly.Xml.textToDom(xmlFromLS);
-      Blockly.Xml.domToWorkspace(xml, workspace);
+    fetch('/data')
+      .then(data => data.text())
+      .then(xmlFromLS => {
+      if (xmlFromLS) {
+        var xml = Blockly.Xml.textToDom(xmlFromLS);
+        Blockly.Xml.domToWorkspace(xml, workspace);
+      }
+    })
+
+    function postData(url = ``, data = {}) {
+      // Default options are marked with *
+        return fetch(url, {
+            method: "POST", // *GET, POST, PUT, DELETE, etc.
+            mode: "cors", // no-cors, cors, *same-origin
+            cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
+            credentials: "same-origin", // include, *same-origin, omit
+            headers: {
+                "Content-Type": "application/json; charset=utf-8",
+                // "Content-Type": "application/x-www-form-urlencoded",
+            },
+            redirect: "follow", // manual, *follow, error
+            referrer: "no-referrer", // no-referrer, *client
+            body: JSON.stringify(data), // body data type must match "Content-Type" header
+        }); // parses response to JSON
     }
 
     // function render(workspace) {

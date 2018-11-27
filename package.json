@@ -1,0 +1,23 @@
+{
+  "name": "ui-diagram-blocky",
+  "version": "1.0.0",
+  "description": "",
+  "main": "blockly_compressed.js",
+  "scripts": {
+    "start": "nodemon index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/moshfeu/blocky-app-structure.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/moshfeu/blocky-app-structure/issues"
+  },
+  "homepage": "https://github.com/moshfeu/blocky-app-structure#readme",
+  "dependencies": {
+    "body-parser": "^1.18.3",
+    "express": "^4.16.4"
+  }
+}
